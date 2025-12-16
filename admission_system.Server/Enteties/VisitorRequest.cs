@@ -2,13 +2,13 @@
 {
     public class VisitorRequest
     {
-        private Guid VisitorId { get; set; }
-        private int Age { get; set; }
-        private string? VisitorType {  get; set; }
-        private bool IsPass {  get; set; }
-        private int PassLevel { get; set; }
-        private bool IsWeapons { get; set; }
-        private bool IsAggressive { get; set; }
-        private string? Zone { get; set; }
+        public Guid VisitorId { get; set; }
+        public int Age { get; set; }
+        public string? VisitorType {  get; set; }
+        public bool IsPass {  get; set; }
+        public int PassLevel { get; set; }
+        public bool IsWeapons { get; set; }
+        public bool IsAggressive { get; set; }
+        public string? Zone { get; set; }
     }
 }
