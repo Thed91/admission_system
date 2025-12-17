@@ -1,4 +1,4 @@
-﻿using admission_system.Server.Models;
+﻿using admission_system.Server.Enteties;
 using admission_system.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +21,24 @@ namespace admission_system.Server.Controllers
         public IActionResult FormCheck([FromBody] VisitorRequest visitorRequest)
         {
             return Ok(_admissionService.CheckVisitor(visitorRequest));
+        }
+
+        [HttpGet("history")]
+        public async Task<IAdmissionService> GetHistory()
+        {
+            var request = await _admissionService.GetAllVisitor();
+            return (IAdmissionService)Ok(request);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById( Guid Id)
+        {
+            var request = await _admissionService.GetVisitorByID(Id);
+            if (request == null)
+            {
+                return NotFound();
+            }
+            return Ok(request);
         }
     }
 }

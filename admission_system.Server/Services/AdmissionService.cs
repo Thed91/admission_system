@@ -1,23 +1,33 @@
-﻿using admission_system.Server.Models;
+﻿using admission_system.Server.Data;
+using admission_system.Server.Enteties;
+using Microsoft.EntityFrameworkCore;
 
 namespace admission_system.Server.Services
 {
     public class AdmissionService : IAdmissionService
     {
+        private readonly ApplicationDbContext _context;
+
+        public AdmissionService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         const string GUEST = "guest";
         const string MEETING_ROOM = "meeting room";
         const string LABORATORY = "laboratory";
         const string SECRET_LABORATORY = "secret laboratory";
+        private string result = "";
         RiskLevel _RiskLevel;
         public string CheckVisitor(VisitorRequest visitorRequest)
         {
             if (visitorRequest.Age < 18)
             {
-                return "Denied: under 18 years of age";
+                result = "Denied: under 18 years of age";
             }
             else if (!visitorRequest.IsPass)
             {
-                return "Denied: no pass";
+                result = "Denied: no pass";
             }
 
             if (!visitorRequest.IsWeapons && !visitorRequest.IsAggressive)
@@ -88,8 +98,19 @@ namespace admission_system.Server.Services
                 return "Admitted to " + visitorRequest.Zone;
             }
 
-            return "";
+            visitorRequest.VisitorId = Guid.NewGuid();
+            visitorRequest.CreateAt = DateTime.Now;
+
+            _context.Requests.Add(visitorRequest);
+            _context.SaveChanges();
+
+            return result;
         }
+
+        public async Task<VisitorRequest> GetVisitorByID(Guid id) => await _context.Requests.FirstOrDefaultAsync(r => r.VisitorId == id);
+
+        public async Task<List<VisitorRequest>> GetAllVisitor() => await _context.Requests.OrderByDescending(r => r.CreateAt).ToListAsync();
+        
     }
 
     enum RiskLevel
