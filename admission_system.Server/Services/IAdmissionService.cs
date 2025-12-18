@@ -4,9 +4,8 @@ namespace admission_system.Server.Services
 {
     public interface IAdmissionService
     {
-        string CheckVisitor(VisitorRequest visitorRequest);
+        Task<string> CheckVisitor(VisitorRequest visitorRequest);
         Task<List<VisitorRequest>> GetAllVisitor();
-        Task<VisitorRequest> GetVisitorByID(Guid id);
-
+        Task<VisitorRequest?> GetVisitorByID(Guid id);
     }
 }

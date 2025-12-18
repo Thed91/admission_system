@@ -18,9 +18,10 @@ namespace admission_system.Server.Controllers
         }
 
         [HttpPost("formCheck")]
-        public IActionResult FormCheck([FromBody] VisitorRequest visitorRequest)
+        public async Task<IActionResult> FormCheck([FromBody] VisitorRequest visitorRequest)
         {
-            return Ok(_admissionService.CheckVisitor(visitorRequest));
+            var result = await _admissionService.CheckVisitor(visitorRequest);
+            return Ok(result);
         }
 
         [HttpGet("history")]
@@ -31,9 +32,9 @@ namespace admission_system.Server.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById( Guid Id)
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var request = await _admissionService.GetVisitorByID(Id);
+            var request = await _admissionService.GetVisitorByID(id);
             if (request == null)
             {
                 return NotFound();

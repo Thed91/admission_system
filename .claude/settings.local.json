@@ -5,7 +5,8 @@
       "Bash(findstr:*)",
       "Bash(dotnet restore:*)",
       "Bash(dotnet ef migrations:*)",
-      "Bash(dir /B /S *.cs)"
+      "Bash(dir /B /S *.cs)",
+      "Bash(dotnet build:*)"
     ]
   }
 }

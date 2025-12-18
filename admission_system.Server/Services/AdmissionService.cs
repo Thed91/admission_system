@@ -18,97 +18,123 @@ namespace admission_system.Server.Services
         const string LABORATORY = "laboratory";
         const string SECRET_LABORATORY = "secret laboratory";
         
-        public string CheckVisitor(VisitorRequest visitorRequest)
+        public async Task<string> CheckVisitor(VisitorRequest visitorRequest)
         {
-            RiskLevel _RiskLevel;
-            string result = "";
+            string result;
+
             if (visitorRequest.Age < 18)
             {
                 result = "Denied: under 18 years of age";
+                await SaveVisitorRequest(visitorRequest, result);
+                return result;
             }
-            else if (!visitorRequest.IsPass)
+
+            if (!visitorRequest.IsPass)
             {
                 result = "Denied: no pass";
+                await SaveVisitorRequest(visitorRequest, result);
+                return result;
             }
 
-            if (!visitorRequest.IsWeapons && !visitorRequest.IsAggressive)
-            {
-                _RiskLevel = RiskLevel.LOW;
-            }
-
-            if (visitorRequest.IsWeapons || visitorRequest.IsAggressive)
-            {
-                _RiskLevel = RiskLevel.MEDIUM;
-            }
-
+            RiskLevel riskLevel;
             if (visitorRequest.IsWeapons && visitorRequest.IsAggressive)
             {
-                _RiskLevel = RiskLevel.HIGH;
+                riskLevel = RiskLevel.HIGH;
+            }
+            else if (visitorRequest.IsWeapons || visitorRequest.IsAggressive)
+            {
+                riskLevel = RiskLevel.MEDIUM;
+            }
+            else
+            {
+                riskLevel = RiskLevel.LOW;
             }
 
-            if (_RiskLevel == RiskLevel.HIGH)
+            if (riskLevel == RiskLevel.HIGH)
             {
                 if (visitorRequest.VisitorType?.ToLower() == GUEST)
                 {
-                    return "Denied: high risk level";
+                    result = "Denied: high risk level";
+                    await SaveVisitorRequest(visitorRequest, result);
+                    return result;
                 }
 
                 if (visitorRequest.Zone?.ToLower() != MEETING_ROOM)
                 {
-                    return "Denied: high risk level, only Meeting Room available";
+                    result = "Denied: high risk level, only Meeting Room available";
+                    await SaveVisitorRequest(visitorRequest, result);
+                    return result;
                 }
 
-                return "Admitted to Meeting Room (high risk)";
+                result = "Admitted to Meeting Room (high risk)";
+                await SaveVisitorRequest(visitorRequest, result);
+                return result;
             }
 
-            if (_RiskLevel == RiskLevel.MEDIUM)
+            if (riskLevel == RiskLevel.MEDIUM)
             {
                 if (visitorRequest.VisitorType?.ToLower() == GUEST)
                 {
-                    return "Denied: normal risk level";
+                    result = "Denied: normal risk level";
+                    await SaveVisitorRequest(visitorRequest, result);
+                    return result;
                 }
 
                 if (visitorRequest.Zone?.ToLower() == SECRET_LABORATORY)
                 {
-                    return "Denied: insufficient clearance level";
+                    result = "Denied: insufficient clearance level";
+                    await SaveVisitorRequest(visitorRequest, result);
+                    return result;
                 }
 
-                return "Admitted to " + visitorRequest.Zone + " (medium risk)";
+                result = "Admitted to " + visitorRequest.Zone + " (medium risk)";
+                await SaveVisitorRequest(visitorRequest, result);
+                return result;
             }
 
-            if (_RiskLevel == RiskLevel.LOW)
+            if (visitorRequest.VisitorType?.ToLower() == GUEST)
             {
-                if (visitorRequest.VisitorType?.ToLower() == GUEST)
+                if (visitorRequest.Zone?.ToLower() != MEETING_ROOM)
                 {
-                    if (visitorRequest.Zone?.ToLower() != MEETING_ROOM)
-                    {
-                        return "Denied: only Meeting Room available";
-                    }
-
-                    return "Admitted to " + visitorRequest.Zone;
+                    result = "Denied: only Meeting Room available";
+                    await SaveVisitorRequest(visitorRequest, result);
+                    return result;
                 }
 
-                if ((visitorRequest.Zone?.ToLower() == LABORATORY || visitorRequest.Zone?.ToLower() == SECRET_LABORATORY) && visitorRequest.PassLevel < 2)
-                {
-                    return "Denied: insufficient clearance level";
-                }
-                if (visitorRequest.Zone?.ToLower() == SECRET_LABORATORY && visitorRequest.PassLevel < 3)
-                {
-                    return "Denied: insufficient clearance level";
-                }
-                return "Admitted to " + visitorRequest.Zone;
+                result = "Admitted to " + visitorRequest.Zone;
+                await SaveVisitorRequest(visitorRequest, result);
+                return result;
             }
 
+            if ((visitorRequest.Zone?.ToLower() == LABORATORY || visitorRequest.Zone?.ToLower() == SECRET_LABORATORY) && visitorRequest.PassLevel < 2)
+            {
+                result = "Denied: insufficient clearance level";
+                await SaveVisitorRequest(visitorRequest, result);
+                return result;
+            }
+
+            if (visitorRequest.Zone?.ToLower() == SECRET_LABORATORY && visitorRequest.PassLevel < 3)
+            {
+                result = "Denied: insufficient clearance level";
+                await SaveVisitorRequest(visitorRequest, result);
+                return result;
+            }
+
+            result = "Admitted to " + visitorRequest.Zone;
+            await SaveVisitorRequest(visitorRequest, result);
+            return result;
+        }
+
+        private async Task SaveVisitorRequest(VisitorRequest visitorRequest, string result)
+        {
             visitorRequest.VisitorId = Guid.NewGuid();
             visitorRequest.CreateAt = DateTime.UtcNow;
 
             _context.Requests.Add(visitorRequest);
-            _context.SaveChanges();
-
-            return result;
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<VisitorRequest> GetVisitorByID(Guid id) => await _context.Requests.FirstOrDefaultAsync(r => r.VisitorId == id);
+        public async Task<VisitorRequest?> GetVisitorByID(Guid id) => await _context.Requests.FirstOrDefaultAsync(r => r.VisitorId == id);
 
         public async Task<List<VisitorRequest>> GetAllVisitor() => await _context.Requests.OrderByDescending(r => r.CreateAt).ToListAsync();
         
