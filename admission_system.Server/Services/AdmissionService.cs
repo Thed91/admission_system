@@ -17,10 +17,11 @@ namespace admission_system.Server.Services
         const string MEETING_ROOM = "meeting room";
         const string LABORATORY = "laboratory";
         const string SECRET_LABORATORY = "secret laboratory";
-        private string result = "";
-        RiskLevel _RiskLevel;
+        
         public string CheckVisitor(VisitorRequest visitorRequest)
         {
+            RiskLevel _RiskLevel;
+            string result = "";
             if (visitorRequest.Age < 18)
             {
                 result = "Denied: under 18 years of age";
@@ -99,7 +100,7 @@ namespace admission_system.Server.Services
             }
 
             visitorRequest.VisitorId = Guid.NewGuid();
-            visitorRequest.CreateAt = DateTime.Now;
+            visitorRequest.CreateAt = DateTime.UtcNow;
 
             _context.Requests.Add(visitorRequest);
             _context.SaveChanges();

@@ -24,10 +24,10 @@ namespace admission_system.Server.Controllers
         }
 
         [HttpGet("history")]
-        public async Task<IAdmissionService> GetHistory()
+        public async Task<IActionResult> GetHistory()
         {
             var request = await _admissionService.GetAllVisitor();
-            return (IAdmissionService)Ok(request);
+            return Ok(request);
         }
 
         [HttpGet("{id}")]
